@@ -1,0 +1,81 @@
+from time_function import*
+from sorting import*
+from datetime import*
+
+starty, startm, startd, endy, endm, endd = map(int, input("시작 날짜와 끝 날짜를 year month day 형식으로 입력해주세요. ex: 2000 1 2 2002 3 4 ▶ ").split())
+days = start_finishdays(starty, startm, startd, endy, endm, endd)
+  
+
+#일정 개수를 입력받고 딕셔너리로 저장
+todo = {} #숙제 담을 딕셔너리임
+importance = {} #과제별 중요도 계산해서 넣을 딕셔너리임
+homework = input("해야하는 과제의 갯수를 입력. 적진 않겠지!! ▶ ")
+
+global planname
+
+for i in range(int(homework)): #homework 번 반복
+    planname = input("일정의 이름 설정 ▶ ")
+    leftdate = list(map(int, input("기한 ex) 2000 1 1 ▶ ").split())) # 이거도 time 모듈 이야기 해 보아야 할듯
+    left = start_finishdays(starty, startm, startd, leftdate[0], leftdate[1], leftdate[2])
+    val = 0
+    while not 1 <= val <= 10:
+        val = int(input("중요도를 1에서 10 사이의 값으로 설정하라 ▶ "))
+    timespend = 0
+    while not 0 < timespend <= 24:
+        timespend = int(input("몇시간 걸리려나? ▶ ")) #이건 hour로 해도?
+    todo[planname] = (days - left, val, timespend) #goal을 key로, 튜플을 value로..
+    print(todo)
+    print("일정 %s가 추가되었습니다." % planname)
+con = input("더 추가하겠습니까? y or n ▶")
+while con == "y":
+    planname = input("일정의 이름 설정 ▶ ")
+    leftdate = list(map(int, input("기한 ex) 2000 1 1 ▶ ").split())) # 이거도 time 모듈 이야기 해 보아야 할듯
+    left = start_finishdays(starty, startm, startd, leftdate[0], leftdate[1], leftdate[2])
+    val = 0
+    while not 1 <= val <= 10:
+        val = int(input("중요도를 1에서 10 사이의 값으로 설정하라 ▶ "))
+    timespend = 0
+    while not 0 < timespend <= 24:
+        timespend = int(input("몇시간 걸리려나? ▶ ")) #이건 hour로 해도?
+    todo[planname] = (days - left, val, timespend) #goal을 key로, 튜플을 value로..
+    print(todo)
+    print("일정 %s가 추가되었습니다." % planname)
+    con = input("더 추가하겠습니까? y or n ▶ ")
+    
+print("일정의 끝이 있긴 하군요. 일정 입력을 종료합니다.")
+print("")
+sorting(todo)
+
+availdate = list(map(int, input("월~일요일까지 할애 가능한 시간을 차례대로 입력해주세요.").split()))
+week = date(starty, startm, startd).weekday()
+availtime = []
+for d in range(days):
+    availtime.append(availdate[(week+d)%7]) # 여기 맞는지 확인
+print(availtime)
+
+todokeys = list(todo.keys()) #이거는 키 찾기
+plan = [[numbertoday(starty, startm, startd, d)] for d in range(days)] #여기에 일정 집어넣을 예정 key: 날짜, value: 일정
+
+can = False
+for i in range(len(todokeys)):
+    for d in range(days - todo[todokeys[i]][0]):
+        can = False
+        if availtime[d] >= todo[todokeys[i]][2]:
+            plan[d].append((todokeys[i], todo[todokeys[i]][1], todo[todokeys[i]][2])) #중요도, 소요 시간 순서
+            availtime[d] -= todo[todokeys[i]][2]
+            can = True
+            break
+    if can == False:
+        break
+
+if can == False:
+    print("계획을 잡을 수 없습니다.")
+else:
+    for i in range(len(plan)):
+        print("===", plan[i][0][0], plan[i][0][1], plan[i][0][2], plan[i][0][3], "===")
+        if len(plan[i]) != 1:
+            for j in range(1, len(plan[i]), 1):
+                print("%s. %s (중요도 : %s, 소요 시간 : %s시간)" % (j, plan[i][j][0], plan[i][j][1], plan[i][j][2]))   # for i in range(len(plan))
+        else:
+            print("오늘 일정이 없습니다.")
+        print("")
